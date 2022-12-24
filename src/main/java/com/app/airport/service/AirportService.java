@@ -5,10 +5,12 @@ import com.app.airport.models.Airports;
 import com.app.airport.models.Runways;
 import com.app.airport.repository.AirportRepository;
 import com.app.airport.repository.CountryRepository;
+import org.apache.commons.text.CaseUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Service class for retrieving runways and top countries
@@ -38,9 +40,9 @@ public class AirportService {
      */
     public List<Runways> getRunways(String countryCode, String countryName)  {
         if (countryName != null) {
-            List<Airports> airports = countryRepository.getAirportsByName(countryName);
-            return airports.isEmpty()? new ArrayList<>(): airports.stream().iterator().next().getRunways();
-            }
+            List<Airports> airports = countryRepository.getAirportsByName(CaseUtils.toCamelCase(countryName, true, ' '));
+            return airports.isEmpty()? new ArrayList<>(): airports.stream(). flatMap (airport -> airport.getRunways().stream()).collect(Collectors.toList());
+        }
         return airportRepository.getRunwaysByCountryCode(countryCode);
     }
 
